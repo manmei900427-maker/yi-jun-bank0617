@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yi Jun Bank</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #18191B; color: #E4E6EB; }
+    .glass-panel { background: rgba(36, 38, 41, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .metallic-card { background: linear-gradient(135deg, #2C2E33 0%, #1C1D20 50%, #32353B 100%); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+  <!-- 登入畫面 -->
+  <div id="login-view" class="w-full max-w-md glass-panel rounded-2xl p-8 shadow-2xl">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-zinc-100">Yi Jun Bank</h1>
+      <p class="text-xs text-zinc-400 mt-1 tracking-widest uppercase">Private Couple Banking</p>
+    </div>
+    <form id="login-form" class="space-y-5">
+      <div>
+        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Account</label>
+        <input type="text" id="username" required placeholder="admin or jun" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-100 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-zinc-400 mb-1.5">Password</label>
+        <input type="password" id="password" required placeholder="Default 1234" class="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-zinc-100 text-sm">
+      </div>
+      <p id="login-error" class="text-xs text-rose-400 hidden">Incorrect account or password.</p>
+      <button type="submit" class="w-full py-3 rounded-xl bg-zinc-200 hover:bg-white text-zinc-900 font-semibold text-sm">Login</button>
+    </form>
+  </div>
+
+  <!-- 主系統 -->
+  <div id="app-view" class="w-full max-w-2xl hidden space-y-6 pb-12">
+    <header class="glass-panel rounded-2xl px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <img id="nav-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full object-cover border border-zinc-600">
+        <div>
+          <h2 id="header-bank-name" class="text-base font-bold text-zinc-100">Yi Jun Bank</h2>
+          <p id="header-user-greeting" class="text-xs text-zinc-400"></p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="toggle-admin-btn" onclick="toggleAdminView()" class="hidden px-3.5 py-1.5 rounded-lg bg-zinc-700 text-xs text-zinc-200">Admin</button>
+        <button onclick="logout()" class="px-3.5 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400">Logout</button>
+      </div>
+    </header>
+
+    <!-- 公告 -->
+    <div class="glass-panel rounded-xl px-5 py-3 flex items-center space-x-3 border-l-4 border-zinc-400">
+      <span class="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-200">Notice</span>
+      <p id="banner-announcement" class="text-xs text-zinc-300"></p>
+    </div>
+
+    <!-- 前台網銀 -->
+    <div id="user-dashboard" class="space-y-6">
+      <div id="virtual-card" class="metallic-card rounded-2xl p-6 sm:p-8 relative overflow-hidden bg-cover bg-center">
+        <div class="absolute inset-0 bg-zinc-950/65"></div>
+        <div class="relative z-10 flex flex-col justify-between h-44">
+          <div class="flex justify-between items-start">
+            <div>
+              <p id="card-tier-label" class="text-xs tracking-widest text-zinc-400 uppercase"></p>
+              <p id="card-holder-name" class="text-sm font-medium text-zinc-200 mt-1"></p>
+            </div>
+            <span class="text-xs font-mono text-zinc-400 border border-zinc-600 px-2.5 py-1 rounded-md">VIRTUAL NT$</span>
+          </div>
+          <div>
+            <p class="text-xs text-zinc-400 mb-1">Available Balance</p>
+            <div class="flex items-baseline space-x-2">
+              <span class="text-lg font-medium text-zinc-400">NT$</span>
+              <span id="user-balance" class="text-3xl sm:text-4xl font-bold tracking-tight text-white">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 轉帳區 -->
+      <div class="glass-panel rounded-2xl p-5">
+        <h3 class="text-sm font-semibold text-zinc-200 mb-4">Quick Transfer</h3>
+        <form id="transfer-form" class="space-y-3">
+          <input type="number" id="transfer-amount" min="1" required placeholder="Amount (NT$)" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-sm text-zinc-100">
+          <input type="text" id="transfer-note" required placeholder="Note (e.g. Dinner)" class="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-sm text-zinc-100">
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-zinc-200 hover:bg-white text-zinc-900 font-semibold text-xs">Transfer</button>
+        </form>
+      </div>
+
+      <!-- 交易紀錄 -->
+      <div class="glass-panel rounded-2xl p-6">
+        <h3 class="text-sm font-semibold text-zinc-200 mb-4">Transaction History</h3>
+        <div id="transaction-list" class="space-y-3 max-h-56 overflow-y-auto"></div>
+      </div>
+    </div>
+
+    <!-- 管理員後台 -->
+    <div id="admin-dashboard" class="hidden space-y-6">
+      <div class="glass-panel rounded-2xl p-6">
+        <h3 class="text-base font-bold text-zinc-100 mb-4">Admin Control Center</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1">Announcement</label>
+            <input type="text" id="cfg-announcement" class="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs text-zinc-200">
+          </div>
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1">Card Background URL</label>
+            <input type="text" id="cfg-card-bg" class="w-full px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-700 text-xs text-zinc-200">
+          </div>
+          <button onclick="saveConfigToCloud()" class="px-5 py-2.5 rounded-xl bg-zinc-200 hover:bg-white text-zinc-900 font-semibold text-xs">Save & Sync</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPAGBASE_URL_CONFIG = 'https://dcrcgiehmnuzgpdqhhbl.supabase.co';
+    const SUPABASE_KEY_CONFIG = 'sb_publishable_gPoe8ITiH6IKDktKJ5qXeA_DBGhIFQy'; 
+
+    const supabaseClient = supabase.createClient(SUPAGBASE_URL_CONFIG, SUPABASE_KEY_CONFIG);
+
+    let currentUser = null;
+    let isAdminView = false;
+    let siteConfig = {};
+
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim().toLowerCase();
+      const p = document.getElementById('password').value.trim();
+
+      const { data, error } = await supabaseClient.from('profiles').select('*').eq('username', u).single();
+      if (data && data.password === p) {
+        currentUser = data;
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('app-view').classList.remove('hidden');
+        if (data.role === 'admin') document.getElementById('toggle-admin-btn').classList.remove('hidden');
+        await loadAppData();
+      } else {
+        document.getElementById('login-error').classList.remove('hidden');
+      }
+    });
+
+    async function loadAppData() {
+      const { data: cfg } = await supabaseClient.from('site_config').select('*').eq('id', 1).single();
+      if (cfg) {
+        siteConfig = cfg;
+        document.getElementById('header-bank-name').textContent = cfg.bank_name;
+        document.getElementById('banner-announcement').textContent = cfg.announcement;
+        document.getElementById('card-tier-label').textContent = cfg.card_label;
+        document.getElementById('nav-avatar').src = cfg.avatar_url;
+        document.getElementById('virtual-card').style.backgroundImage = `url('${cfg.card_bg_url}')`;
+      }
+
+      const { data: userDat } = await supabaseClient.from('profiles').select('*').eq('username', currentUser.username).single();
+      if (userDat) currentUser = userDat;
+      document.getElementById('header-user-greeting').textContent = `Welcome, ${currentUser.name}`;
+      document.getElementById('card-holder-name').textContent = `Cardholder: ${currentUser.name}`;
+      document.getElementById('user-balance').textContent = currentUser.balance.toLocaleString();
+
+      const { data: txs } = await supabaseClient.from('transactions').select('*').eq('username', currentUser.username).order('id', { ascending: false });
+      const txList = document.getElementById('transaction-list');
+      txList.innerHTML = '';
+      if (!txs || txs.length === 0) {
+        txList.innerHTML = '<p class="text-xs text-zinc-500 text-center py-2">No transactions</p>';
+      } else {
+        txs.forEach(t => {
+          const color = t.amount > 0 ? 'text-emerald-400' : 'text-zinc-300';
+          txList.innerHTML += `<div class="flex justify-between p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs"><span>${t.title} (${t.date})</span><span class="${color}">${t.amount > 0 ? '+' : ''}${t.amount.toLocaleString()}</span></div>`;
+        });
+      }
+    }
+
+    document.getElementById('transfer-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const amount = parseInt(document.getElementById('transfer-amount').value);
+      const note = document.getElementById('transfer-note').value.trim();
+      const targetUserKey = currentUser.username === 'admin' ? 'jun' : 'admin';
+
+      if (amount <= 0 || amount > currentUser.balance) {
+        alert('Insufficient balance or invalid amount!');
+        return;
+      }
+
+      const { data: targetDat } = await supabaseClient.from('profiles').select('*').eq('username', targetUserKey).single();
+      
+      const newSenderBal = currentUser.balance - amount;
+      const newTargetBal = targetDat.balance + amount;
+      const now = new Date().toLocaleString('en-US', { hour12: false }).slice(0, 16);
+      const timestamp = Date.now();
+
+      await supabaseClient.from('profiles').update({ balance: newSenderBal }).eq('username', currentUser.username);
+      await supabaseClient.from('profiles').update({ balance: newTargetBal }).eq('username', targetUserKey);
+      
+      await supabaseClient.from('transactions').insert([
+        { id: timestamp, date: now, title: `Transfer to ${targetDat.name}: ${note}`, amount: -amount, username: currentUser.username },
+        { id: timestamp + 1, date: now, title: `Received from ${currentUser.name}: ${note}`, amount: amount, username: targetUserKey }
+      ]);
+
+      document.getElementById('transfer-amount').value = '';
+      document.getElementById('transfer-note').value = '';
+      alert('Transfer successful!');
+      await loadAppData();
+    });
+
+    function toggleAdminView() {
+      isAdminView = !isAdminView;
+      document.getElementById('user-dashboard').classList.toggle('hidden', isAdminView);
+      document.getElementById('admin-dashboard').classList.toggle('hidden', !isAdminView);
+      if (isAdminView) {
+        document.getElementById('cfg-announcement').value = siteConfig.announcement;
+        document.getElementById('cfg-card-bg').value = siteConfig.card_bg_url;
+      }
+    }
+
+    async function saveConfigToCloud() {
+      const newAnn = document.getElementById('cfg-announcement').value.trim();
+      const newBg = document.getElementById('cfg-card-bg').value.trim();
+      await supabaseClient.from('site_config').update({ announcement: newAnn, card_bg_url: newBg }).eq('id', 1);
+      alert('Settings saved and synced!');
+      await loadAppData();
+      toggleAdminView();
+    }
+
+    function logout() { location.reload(); }
+  </script>
+</body>
+</html>
