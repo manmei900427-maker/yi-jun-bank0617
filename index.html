@@ -15,7 +15,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-  <!-- µÇÈë®‹Ãæ -->
+  <!-- ç™»å…¥ç•«é¢ -->
   <div id="login-view" class="w-full max-w-md glass-panel rounded-2xl p-8 shadow-2xl">
     <div class="text-center mb-8">
       <h1 class="text-2xl font-bold text-zinc-100">Yi Jun Bank</h1>
@@ -35,7 +35,7 @@
     </form>
   </div>
 
-  <!-- Ö÷Ïµ½y -->
+  <!-- ä¸»ç³»çµ± -->
   <div id="app-view" class="w-full max-w-2xl hidden space-y-6 pb-12">
     <header class="glass-panel rounded-2xl px-6 py-4 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -51,13 +51,13 @@
       </div>
     </header>
 
-    <!-- ¹«¸æ -->
+    <!-- å…¬å‘Š -->
     <div class="glass-panel rounded-xl px-5 py-3 flex items-center space-x-3 border-l-4 border-zinc-400">
       <span class="text-xs px-2 py-0.5 rounded bg-zinc-700 text-zinc-200">Notice</span>
       <p id="banner-announcement" class="text-xs text-zinc-300"></p>
     </div>
 
-    <!-- Ç°Ì¨¾Wãy -->
+    <!-- å‰å°ç¶²éŠ€ -->
     <div id="user-dashboard" class="space-y-6">
       <div id="virtual-card" class="metallic-card rounded-2xl p-6 sm:p-8 relative overflow-hidden bg-cover bg-center">
         <div class="absolute inset-0 bg-zinc-950/65"></div>
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <!-- ÞDŽ¤…^ -->
+      <!-- è½‰å¸³å€ -->
       <div class="glass-panel rounded-2xl p-5">
         <h3 class="text-sm font-semibold text-zinc-200 mb-4">Quick Transfer</h3>
         <form id="transfer-form" class="space-y-3">
@@ -89,14 +89,14 @@
         </form>
       </div>
 
-      <!-- ½»Ò×¼oä› -->
+      <!-- äº¤æ˜“ç´€éŒ„ -->
       <div class="glass-panel rounded-2xl p-6">
         <h3 class="text-sm font-semibold text-zinc-200 mb-4">Transaction History</h3>
         <div id="transaction-list" class="space-y-3 max-h-56 overflow-y-auto"></div>
       </div>
     </div>
 
-    <!-- ¹ÜÀí†TááÌ¨ -->
+    <!-- ç®¡ç†å“¡å¾Œå° -->
     <div id="admin-dashboard" class="hidden space-y-6">
       <div class="glass-panel rounded-2xl p-6">
         <h3 class="text-base font-bold text-zinc-100 mb-4">Admin Control Center</h3>
@@ -116,8 +116,12 @@
   </div>
 
   <script>
+    // ==========================================
+    // è«‹å°‡ç¬¬äºŒæ­¥è¤‡è£½çš„ Publishable Key è²¼åœ¨ä¸‹æ–¹å¼•è™Ÿå…§
+    // ==========================================
     const SUPAGBASE_URL_CONFIG = 'https://dcrcgiehmnuzgpdqhhbl.supabase.co';
     const SUPABASE_KEY_CONFIG = 'sb_publishable_gPoe8ITiH6IKDktKJ5qXeA_DBGhIFQy'; 
+    // ==========================================
 
     const supabaseClient = supabase.createClient(SUPAGBASE_URL_CONFIG, SUPABASE_KEY_CONFIG);
 
